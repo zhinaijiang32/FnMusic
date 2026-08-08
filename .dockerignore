@@ -1,0 +1,9 @@
+.git
+.env
+data
+node_modules
+flutter
+client/build
+client/.dart_tool
+server/node_modules
+server/data

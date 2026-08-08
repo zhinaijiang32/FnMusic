@@ -1,0 +1,17 @@
+services:
+  fnmusic-server:
+    build: .
+    image: fnmusic-server:local
+    container_name: fnmusic-server
+    ports:
+      - "${FNMUSIC_PORT:-8443}:8443"
+    volumes:
+      - ${FNMUSIC_DATA_DIR:-./data}:/app/data
+      - ${MUSIC_CACHE_DIR:-./data/music}:/app/data/music
+    environment:
+      NODE_ENV: production
+      HTTPS_PORT: 8443
+      DATA_DIR: /app/data
+      MUSIC_STORE_PATH: /app/data/music
+      INTERNAL_HOST: ${INTERNAL_HOST:-localhost}
+    restart: unless-stopped

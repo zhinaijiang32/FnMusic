@@ -1,0 +1,22 @@
+{
+  "name": "fnmusic-server",
+  "version": "1.0.0",
+  "description": "飞牛音乐服务端 - 基于 NeteaseCloudMusicApi 的音乐流媒体服务",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "better-sqlite3": "^11.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "morgan": "^1.10.0",
+    "express-rate-limit": "^7.4.0",
+    "NeteaseCloudMusicApi": "4.32.0"
+  }
+}

@@ -1,0 +1,38 @@
+# Runtime state and credentials
+.env
+**/.env
+data/
+server/data/
+*.pem
+*.key
+*.db
+*.db-*
+*.part
+
+# Dependencies and generated artifacts
+node_modules/
+server/node_modules/
+flutter/
+client/.dart_tool/
+client/build/
+client/android/.gradle/
+client/windows/flutter/ephemeral/
+
+# Local IDE and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local deployment/agent artifacts, not project source
+/i
+/=
+/deploy.py
+/deploy_fixed.py
+/deploy_b64.txt
+/deploy_data.json
+/deploy_files.json
+/deploy_py_b64.txt
+/files_b64.txt
+/server-full.tar.gz
+/upload_server.sh
