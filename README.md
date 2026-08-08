@@ -97,7 +97,7 @@ FnMusic 由下列开源项目提供运行时能力；衷心感谢各项目的维
 
 ### 服务端
 
-- [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)：网易云音乐 API 服务。
+- [NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)：网易云音乐 API 服务。 （原仓库已经停止维护，计划更换为其他的）
 - [Express](https://github.com/expressjs/express)：Node.js Web 框架。
 - [Axios](https://github.com/axios/axios)：HTTP 请求客户端。
 - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)：SQLite 数据库驱动。
