@@ -4,6 +4,36 @@
 
 > 本项目仅供个人使用。请遵守网易云音乐及相关内容提供方的服务条款、版权规则与适用法律；不会绕过会员、付费、地区或版权限制。
 
+## 系统架构
+
+```mermaid
+flowchart TB
+  subgraph Clients[客户端]
+    Windows[Windows 客户端\nFlutter + 原生音频能力]
+    Android[Android 客户端\nFlutter + 原生音频能力]
+  end
+
+  subgraph NAS[NAS 或自托管主机]
+    subgraph Docker[Docker Compose]
+      Server[FnMusic Server\nNode.js / Express\nHTTPS :8443]
+      NCM[NeteaseCloudMusicApi\n内部 HTTP 服务]
+    end
+    State[(FNMUSIC_DATA_DIR\nSQLite · TLS 证书 · JWT 密钥)]
+    Cache[(MUSIC_CACHE_DIR\n音乐缓存文件)]
+  end
+
+  Cloud[网易云音乐服务]
+
+  Windows <--> |HTTPS API · 音频流| Server
+  Android <--> |HTTPS API · 音频流| Server
+  Server <--> |本地 API 调用| NCM
+  NCM <--> |官方接口请求| Cloud
+  Server <--> |会话、账号与运行状态| State
+  Server <--> |命中缓存播放\n完整播放后保存| Cache
+```
+
+客户端仅连接自托管的 FnMusic Server；服务端优先从 NAS 缓存提供音乐，缓存未命中时才通过内部 API 服务请求上游资源。`FNMUSIC_DATA_DIR` 与 `MUSIC_CACHE_DIR` 均由宿主机挂载持久化，不会包含在 Git 仓库中。
+
 ## Docker 部署
 
 要求：Docker Engine 与 Docker Compose Plugin。
