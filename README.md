@@ -42,14 +42,6 @@ docker compose up -d --build
 
 音乐缓存目录不会在服务启动时扫描，也没有后台轮询任务；只有客户端请求播放、下载列表或删除缓存时才会访问缓存盘。没有客户端请求时，缓存盘不会被服务端读取。
 
-### 常用运维命令
-
-```bash
-docker compose ps
-docker compose logs -f fnmusic-server
-docker compose up -d --build
-docker compose down
-```
 
 ## 客户端构建
 
