@@ -9,7 +9,7 @@
 要求：Docker Engine 与 Docker Compose Plugin。
 
 ```bash
-git clone <你的 GitHub 仓库地址> fnmusic
+git clone https://github.com/zhinaijiang32/FnMusic fnmusic
 cd fnmusic
 cp .env.example .env
 # 编辑 .env，至少按需设置 MUSIC_CACHE_DIR
@@ -52,8 +52,6 @@ docker compose down
 ```
 
 ## 客户端构建
-
-客户端不再写死某个内网 IP。构建时通过 `--dart-define` 指向你的服务端：
 
 ```bash
 cd client
