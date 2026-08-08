@@ -64,6 +64,10 @@ class ApiService {
 
   Future<void> initialize() => _ready;
 
+  void refreshServerConfig() {
+    _dio.options.baseUrl = AppConfig.baseUrl;
+  }
+
   Future<Map<String, dynamic>?> readStoredProfile() async {
     await _ready;
     return _profile == null ? null : Map<String, dynamic>.from(_profile!);

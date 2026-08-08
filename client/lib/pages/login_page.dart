@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../providers/auth_provider.dart';
+import 'server_settings_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -255,6 +256,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final auth = ref.watch(authProvider);
 
     return Scaffold(
+      floatingActionButton: FloatingActionButton.small(
+        tooltip: '服务器连接',
+        onPressed: () => Navigator.of(c).push(
+          MaterialPageRoute(builder: (_) => const ServerSettingsPage()),
+        ),
+        child: const Icon(Icons.dns_rounded),
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(

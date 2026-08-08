@@ -6,6 +6,7 @@ import 'pages/home_page.dart';
 import 'pages/search_page.dart';
 import 'pages/favorites_page.dart';
 import 'pages/downloads_page.dart';
+import 'pages/server_settings_page.dart';
 import 'widgets/mini_player.dart';
 import 'providers/auth_provider.dart';
 import 'providers/music_provider.dart';
@@ -45,6 +46,7 @@ class _FnMusicShellState extends ConsumerState<FnMusicShell> {
     SearchPage(),
     FavoritesPage(),
     DownloadsPage(),
+    ServerSettingsPage(),
   ];
 
   @override
@@ -66,6 +68,7 @@ class _FnMusicShellState extends ConsumerState<FnMusicShell> {
           NavigationDestination(icon: Icon(Icons.search), label: '搜索'),
           NavigationDestination(icon: Icon(Icons.favorite), label: '收藏'),
           NavigationDestination(icon: Icon(Icons.download), label: '已下载'),
+          NavigationDestination(icon: Icon(Icons.settings), label: '设置'),
         ],
       ),
     );

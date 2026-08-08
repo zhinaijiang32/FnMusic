@@ -15,8 +15,9 @@ class _FnMusicHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppConfig.initialize();
   HttpOverrides.global = _FnMusicHttpOverrides();
   MediaKit.ensureInitialized();
   runApp(const ProviderScope(child: FnMusicApp()));
