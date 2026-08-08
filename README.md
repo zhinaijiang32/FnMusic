@@ -79,18 +79,6 @@ client/   Flutter Windows/Android 客户端
 server/   Node.js 服务端及 Dockerfile
 data/     Docker 运行时数据（自动生成，不提交 Git）
 ```
-
-## 发布到 GitHub 前
-
-`.gitignore` 已排除本地缓存、证书、数据库、构建产物、Flutter SDK 和上一轮工作记录。发布前仍请执行：
-
-```bash
-git status --ignored
-git status
-```
-
-确认没有提交 `.env`、`data/`、证书、数据库或个人会话信息。
-
 ## 许可证
 
 本项目采用 [MIT License](LICENSE)。详见仓库根目录的 [LICENSE](LICENSE) 文件。
