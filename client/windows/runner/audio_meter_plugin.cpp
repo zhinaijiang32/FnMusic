@@ -278,6 +278,8 @@ std::wstring SessionFilePath() {
       L"LOCALAPPDATA", local_app_data, static_cast<DWORD>(std::size(local_app_data)));
   if (length == 0 || length >= std::size(local_app_data)) return {};
 
+  // Preserve the existing storage path through the product rename, so a
+  // Windows user keeps the securely stored login session after upgrading.
   const std::wstring directory = std::wstring(local_app_data, length) + L"\\FnMusic";
   if (!CreateDirectoryW(directory.c_str(), nullptr) &&
       GetLastError() != ERROR_ALREADY_EXISTS) {
@@ -294,7 +296,7 @@ bool WriteProtectedSession(const std::string& session) {
   input.cbData = static_cast<DWORD>(session.size());
   input.pbData = reinterpret_cast<BYTE*>(const_cast<char*>(session.data()));
   DATA_BLOB encrypted{};
-  if (!CryptProtectData(&input, L"FnMusic authentication session", nullptr,
+  if (!CryptProtectData(&input, L"TuneCache authentication session", nullptr,
                         nullptr, nullptr, CRYPTPROTECT_UI_FORBIDDEN,
                         &encrypted)) {
     return false;

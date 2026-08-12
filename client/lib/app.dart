@@ -11,34 +11,34 @@ import 'widgets/mini_player.dart';
 import 'providers/auth_provider.dart';
 import 'providers/music_provider.dart';
 
-class FnMusicApp extends ConsumerWidget {
-  const FnMusicApp({super.key});
+class TuneCacheApp extends ConsumerWidget {
+  const TuneCacheApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
 
     return MaterialApp(
-      title: '飞牛音乐',
+      title: '音栈 TuneCache',
       debugShowCheckedModeBanner: false,
-      theme: FnMusicTheme.lightTheme,
-      darkTheme: FnMusicTheme.darkTheme,
+      theme: TuneCacheTheme.lightTheme,
+      darkTheme: TuneCacheTheme.darkTheme,
       themeMode: ThemeMode.dark,
       home: authState.isInitializing
           ? const Scaffold(body: Center(child: CircularProgressIndicator()))
-          : (authState.isLoggedIn ? const FnMusicShell() : const LoginPage()),
+          : (authState.isLoggedIn ? const TuneCacheShell() : const LoginPage()),
     );
   }
 }
 
-class FnMusicShell extends ConsumerStatefulWidget {
-  const FnMusicShell({super.key});
+class TuneCacheShell extends ConsumerStatefulWidget {
+  const TuneCacheShell({super.key});
 
   @override
-  ConsumerState<FnMusicShell> createState() => _FnMusicShellState();
+  ConsumerState<TuneCacheShell> createState() => _TuneCacheShellState();
 }
 
-class _FnMusicShellState extends ConsumerState<FnMusicShell> {
+class _TuneCacheShellState extends ConsumerState<TuneCacheShell> {
   int _currentIndex = 0;
 
   final _pages = const [

@@ -10,24 +10,22 @@ class AudioPlayerService {
   static final AudioPlayerService _instance = AudioPlayerService._internal();
   factory AudioPlayerService() => _instance;
 
-  final Player _player = Player();
+  final Player _player = Player(
+    configuration: const PlayerConfiguration(logLevel: MPVLogLevel.error),
+  );
   String? _currentSongId;
   final _spectrumController = StreamController<List<double>>.broadcast();
   final _playingController = StreamController<bool>.broadcast();
   Timer? _spectrumTimer;
+  Timer? _spectrumStartTimer;
   bool _readingSpectrum = false;
+  bool _windowsAudioOutputConfigured = false;
   List<double>? _smoothedSpectrum;
   bool _isPlaying = false;
   static const _audioMeter = MethodChannel('fnmusic/audio_meter');
 
   AudioPlayerService._internal() {
     _player.stream.playing.listen(_publishPlaying);
-    if (Platform.isWindows || Platform.isAndroid) {
-      _spectrumTimer = Timer.periodic(
-        const Duration(milliseconds: 70),
-        (_) => _readOutputSpectrum(),
-      );
-    }
     if (Platform.isAndroid || Platform.isIOS) {
       unawaited(_configureMobileTls());
     }
@@ -43,6 +41,23 @@ class AudioPlayerService {
     }
   }
 
+  Future<void> _configureWindowsAudioOutput() async {
+    if (!Platform.isWindows || _windowsAudioOutputConfigured) return;
+    try {
+      // libmpv may otherwise auto-select OpenAL on some installations. Try
+      // the native shared-mode backend first, then automatically fall back to
+      // DirectSound when a Windows endpoint rejects WASAPI with 0x8007001f.
+      await (_player.platform as dynamic)
+          .setProperty('ao', 'wasapi,directsound');
+      await (_player.platform as dynamic).setProperty('audio-device', 'auto');
+      _windowsAudioOutputConfigured = true;
+    } catch (_) {
+      // Keep the existing backend as a fallback. The playback page will show
+      // any resulting error instead of allowing an unhandled future to close
+      // the application.
+    }
+  }
+
   Player get player => _player;
 
   Future<void> play(String songId, String? token) async {
@@ -54,10 +69,18 @@ class AudioPlayerService {
       } else if (!_player.state.playing) {
         await _player.play();
         _publishPlaying(true);
+      } else {
+        _startSpectrumSampling();
       }
       return;
     }
 
+    // Do not open a new player stream while the native loopback analyser is
+    // holding the output endpoint. Some Windows drivers cannot initialise both
+    // clients concurrently and may terminate the process instead of reporting
+    // a recoverable WASAPI error.
+    _stopSpectrumSampling();
+    await _configureWindowsAudioOutput();
     final url = '${AppConfig.baseUrl}/api/music/play/$songId';
     try {
       await _player.open(
@@ -161,11 +184,45 @@ class AudioPlayerService {
   void _publishPlaying(bool playing) {
     if (_isPlaying == playing) return;
     _isPlaying = playing;
+    if (playing) {
+      _startSpectrumSampling();
+    } else {
+      _stopSpectrumSampling();
+    }
     _playingController.add(playing);
   }
 
-  void dispose() {
+  // Windows uses a WASAPI loopback FFT; Android uses its platform visualizer.
+  // Sampling begins after the output player has opened, and errors are ignored
+  // so a visualiser failure can never interrupt playback.
+  bool get _supportsNativeSpectrum => Platform.isAndroid || Platform.isWindows;
+
+  void _startSpectrumSampling() {
+    if (!_supportsNativeSpectrum || _spectrumTimer != null) return;
+    _spectrumStartTimer?.cancel();
+    // Let libmpv finish opening and own the output device before starting the
+    // optional analyser. This also makes a failed analyser unable to affect
+    // the start of audio playback.
+    _spectrumStartTimer = Timer(const Duration(milliseconds: 800), () {
+      _spectrumStartTimer = null;
+      if (!_isPlaying || _spectrumTimer != null) return;
+      _spectrumTimer = Timer.periodic(
+        const Duration(milliseconds: 110),
+        (_) => _readOutputSpectrum(),
+      );
+      unawaited(_readOutputSpectrum());
+    });
+  }
+
+  void _stopSpectrumSampling() {
+    _spectrumStartTimer?.cancel();
+    _spectrumStartTimer = null;
     _spectrumTimer?.cancel();
+    _spectrumTimer = null;
+  }
+
+  void dispose() {
+    _stopSpectrumSampling();
     _spectrumController.close();
     _playingController.close();
     _player.dispose();

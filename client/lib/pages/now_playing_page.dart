@@ -27,6 +27,7 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage> {
   StreamSubscription<bool>? _completedSubscription;
   bool _lyricsLoading = true;
   String? _lyricError;
+  String? _playError;
   double? _draggingPositionMs;
   bool _advancing = false;
 
@@ -50,12 +51,27 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage> {
     if (ref.read(playbackQueueProvider).isEmpty) {
       ref.read(playbackQueueProvider.notifier).state = [song];
     }
-    await ref.read(playbackControllerProvider).playSong(song);
-    unawaited(_loadLyrics(song.id));
+    try {
+      await ref.read(playbackControllerProvider).playSong(song);
+      unawaited(_loadLyrics(song.id));
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _playError = error.toString());
+    }
   }
 
   Future<void> _advanceAfterCompletion() async {
     if (!mounted || _advancing) return;
+    final duration = _playerService.player.state.duration;
+    final position = _playerService.player.state.position;
+    // media_kit can briefly emit `completed` while replacing a media item or
+    // opening an output device. Only advance when the current track has a
+    // known duration and playback has genuinely reached its end.
+    const completionTolerance = Duration(seconds: 2);
+    if (duration <= completionTolerance ||
+        position + completionTolerance < duration) {
+      return;
+    }
     _advancing = true;
     try {
       final current = ref.read(currentSongProvider);
@@ -73,6 +89,22 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage> {
           .skipNext(allowWrap: mode == PlaybackMode.shuffle);
     } finally {
       _advancing = false;
+    }
+  }
+
+  Future<void> _togglePlayback(bool playing) async {
+    if (mounted) {
+      setState(() => _playError = null);
+    }
+    try {
+      if (playing) {
+        await _playerService.pause();
+      } else {
+        await _playerService.resume();
+      }
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _playError = '播放控制失败: $error');
     }
   }
 
@@ -226,7 +258,7 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage> {
               children: [
                 const ListTile(
                   title: Text('选择音频输出设备'),
-                  subtitle: Text('仅切换飞牛音乐的播放输出'),
+                  subtitle: Text('仅切换音栈 TuneCache 的播放输出'),
                 ),
                 RadioListTile<String>(
                   value: 'auto',
@@ -513,6 +545,17 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage> {
                   ?.copyWith(color: Colors.grey)),
           const SizedBox(height: 10),
           _PlaybackSourceBadge(source: source),
+          if (_playError != null) ...[
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                _playError!,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ),
+          ],
           const SizedBox(height: 20),
           StreamBuilder<bool>(
             stream: _playerService.playingStream,
@@ -535,9 +578,7 @@ class _NowPlayingPageState extends ConsumerState<NowPlayingPage> {
                     icon: Icon(playing
                         ? Icons.pause_circle_filled
                         : Icons.play_circle_filled),
-                    onPressed: () => playing
-                        ? _playerService.pause()
-                        : _playerService.resume(),
+                    onPressed: () => _togglePlayback(playing),
                   ),
                   const SizedBox(width: 16),
                   IconButton(

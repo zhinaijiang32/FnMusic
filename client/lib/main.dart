@@ -5,7 +5,7 @@ import 'dart:io';
 import 'app.dart';
 import 'config/app_config.dart';
 
-class _FnMusicHttpOverrides extends HttpOverrides {
+class _TuneCacheHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     final client = super.createHttpClient(context);
@@ -18,7 +18,7 @@ class _FnMusicHttpOverrides extends HttpOverrides {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.initialize();
-  HttpOverrides.global = _FnMusicHttpOverrides();
+  HttpOverrides.global = _TuneCacheHttpOverrides();
   MediaKit.ensureInitialized();
-  runApp(const ProviderScope(child: FnMusicApp()));
+  runApp(const ProviderScope(child: TuneCacheApp()));
 }

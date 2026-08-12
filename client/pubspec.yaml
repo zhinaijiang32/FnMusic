@@ -1,7 +1,7 @@
-name: fnmusic
-description: 飞牛音乐 - 基于 NeteaseCloudMusicApi 的音乐客户端
+name: tunecache
+description: 音栈 TuneCache - 可缓存音乐到自有服务器的跨平台客户端
 publish_to: none
-version: 1.0.1+2
+version: 1.1.0+3
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

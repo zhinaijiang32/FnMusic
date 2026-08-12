@@ -6,15 +6,15 @@ class AppConfig {
   static const _tlsKey = 'server_use_tls';
 
   static const _defaultHost = String.fromEnvironment(
-    'FNMUSIC_SERVER_HOST',
+    'TUNECACHE_SERVER_HOST',
     defaultValue: 'localhost',
   );
   static const _defaultPort = int.fromEnvironment(
-    'FNMUSIC_SERVER_PORT',
+    'TUNECACHE_SERVER_PORT',
     defaultValue: 8443,
   );
   static const _defaultUseTls = bool.fromEnvironment(
-    'FNMUSIC_USE_TLS',
+    'TUNECACHE_USE_TLS',
     defaultValue: true,
   );
 

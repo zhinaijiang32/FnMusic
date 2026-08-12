@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class FnMusicTheme {
+class TuneCacheTheme {
   static final lightTheme = ThemeData(
     useMaterial3: true,
     colorSchemeSeed: const Color(0xFF6750A4),

@@ -1,12 +1,12 @@
 services:
-  fnmusic-server:
+  tunecache-server:
     build: .
-    image: fnmusic-server:local
-    container_name: fnmusic-server
+    image: tunecache-server:local
+    container_name: tunecache-server
     ports:
-      - "${FNMUSIC_PORT:-8443}:8443"
+      - "${TUNECACHE_PORT:-${FNMUSIC_PORT:-8443}}:8443"
     volumes:
-      - ${FNMUSIC_DATA_DIR:-./data}:/app/data
+      - ${TUNECACHE_DATA_DIR:-${FNMUSIC_DATA_DIR:-./data}}:/app/data
       - ${MUSIC_CACHE_DIR:-./data/music}:/app/data/music
     environment:
       NODE_ENV: production

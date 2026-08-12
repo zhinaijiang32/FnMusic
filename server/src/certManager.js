@@ -23,7 +23,7 @@ class CertManager {
     }
     if (config.domain) san += ',DNS:' + config.domain;
     console.log('[CertManager] SAN: ' + san);
-    const subj = '/C=CN/O=FnMusic/CN=' + hn;
+    const subj = '/C=CN/O=TuneCache/CN=' + hn;
     const cmd = 'openssl req -x509 -newkey rsa:2048 -keyout ' + this.keyPath + ' -out ' + this.certPath + ' -days 3650 -nodes -subj ' + subj + ' -addext subjectAltName=' + san;
     execSync(cmd, { stdio: 'pipe' });
     console.log('[CertManager] Done');

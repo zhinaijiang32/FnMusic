@@ -91,7 +91,7 @@ async function startServer() {
   https.createServer(sslOptions, app).listen(config.port, '0.0.0.0', () => {
     console.log('');
     console.log('============================================');
-    console.log('  🎵 飞牛音乐服务端已启动');
+    console.log('  🎵 音栈 TuneCache 服务端已启动');
     console.log(`  📡 HTTPS 服务地址: https://0.0.0.0:${config.port}`);
     console.log(`  💾 音乐存储路径: ${config.musicStorePath}`);
     console.log(`  🔐 证书指纹: ${certManager.getFingerprint()}`);

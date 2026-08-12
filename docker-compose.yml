@@ -1,11 +1,11 @@
 services:
-  fnmusic-server:
+  tunecache-server:
     build:
       context: ./server
-    image: fnmusic-server:local
-    container_name: fnmusic-server
+    image: tunecache-server:local
+    container_name: tunecache-server
     ports:
-      - "${FNMUSIC_PORT:-8443}:8443"
+      - "${TUNECACHE_PORT:-${FNMUSIC_PORT:-8443}}:8443"
     environment:
       NODE_ENV: production
       HTTPS_PORT: 8443
@@ -14,7 +14,7 @@ services:
       INTERNAL_HOST: ${INTERNAL_HOST:-localhost}
     volumes:
       # Database, TLS certificate, and persistent JWT signing secret.
-      - ${FNMUSIC_DATA_DIR:-./data}:/app/data
+      - ${TUNECACHE_DATA_DIR:-${FNMUSIC_DATA_DIR:-./data}}:/app/data
       # Set MUSIC_CACHE_DIR to any writable host/NAS directory.
       - ${MUSIC_CACHE_DIR:-./data/music}:/app/data/music
     restart: unless-stopped

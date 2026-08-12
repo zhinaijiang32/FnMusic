@@ -18,6 +18,9 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
   List<Map<String, dynamic>> _playlists = const [];
   List<Song> _songs = const [];
   Map<String, dynamic>? _selectedPlaylist;
+  final _searchController = TextEditingController();
+  final Set<String> _pendingLikeChanges = <String>{};
+  String _searchQuery = '';
   bool _loading = true;
   String? _error;
 
@@ -74,12 +77,16 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
 
   Map<String, dynamic>? _likedPlaylist(List<Map<String, dynamic>> playlists) {
     for (final playlist in playlists) {
-      if (playlist['specialType'] == 5 || playlist['name'] == '我喜欢的音乐') {
+      if (_isLikedPlaylist(playlist)) {
         return playlist;
       }
     }
     return null;
   }
+
+  bool _isLikedPlaylist(Map<String, dynamic>? playlist) =>
+      playlist?['specialType']?.toString() == '5' ||
+      playlist?['name'] == '我喜欢的音乐';
 
   Future<void> _openPlaylist(Map<String, dynamic> playlist) async {
     final id = playlist['id']?.toString();
@@ -90,6 +97,8 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
       _loading = true;
       _error = null;
       _songs = const [];
+      _searchQuery = '';
+      _searchController.clear();
     });
 
     try {
@@ -111,11 +120,56 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
   }
 
   void _play(Song song) {
-    ref.read(playbackQueueProvider.notifier).state = _songs;
+    ref.read(playbackQueueProvider.notifier).state = _filteredSongs;
     ref.read(currentSongProvider.notifier).state = song;
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const NowPlayingPage()),
     );
+  }
+
+  List<Song> get _filteredSongs {
+    final query = _searchQuery.trim().toLowerCase();
+    if (query.isEmpty) return _songs;
+    return _songs.where((song) {
+      return song.name.toLowerCase().contains(query) ||
+          song.artist.toLowerCase().contains(query) ||
+          song.album.toLowerCase().contains(query);
+    }).toList(growable: false);
+  }
+
+  Future<void> _setSongLiked(Song song, bool liked) async {
+    if (_pendingLikeChanges.contains(song.id)) return;
+    setState(() => _pendingLikeChanges.add(song.id));
+    try {
+      await ref
+          .read(musicProvider.notifier)
+          .setSongLiked(song.id, liked: liked);
+      if (!mounted) return;
+      setState(() {
+        if (!liked && _isLikedPlaylist(_selectedPlaylist)) {
+          _songs = _songs.where((item) => item.id != song.id).toList();
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(liked ? '已收藏到网易云“我喜欢的音乐”' : '已取消网易云收藏')),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(error.toString().replaceFirst('Exception: ', ''))),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _pendingLikeChanges.remove(song.id));
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -153,12 +207,37 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
     }
 
     final selected = _selectedPlaylist;
+    final songs = _filteredSongs;
+    final isLikedPlaylist = _isLikedPlaylist(selected);
     return RefreshIndicator(
       onRefresh: _loadPlaylists,
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           if (selected != null) _playlistHeader(selected),
+          if (!_loading && selected != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (value) => setState(() => _searchQuery = value),
+                decoration: InputDecoration(
+                  hintText: '搜索此收藏列表中的歌曲、歌手或专辑',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isEmpty
+                      ? null
+                      : IconButton(
+                          tooltip: '清除搜索',
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        ),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+            ),
           if (_loading)
             const Padding(
               padding: EdgeInsets.all(24),
@@ -169,9 +248,34 @@ class _FavoritesPageState extends ConsumerState<FavoritesPage> {
               padding: EdgeInsets.all(32),
               child: Center(child: Text('这个歌单还没有歌曲')),
             )
+          else if (songs.isEmpty)
+            const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(child: Text('没有匹配的收藏音乐')),
+            )
           else
-            ..._songs.map(
-              (song) => MusicTile(song: song, onTap: () => _play(song)),
+            ...songs.map(
+              (song) => MusicTile(
+                song: song,
+                onTap: () => _play(song),
+                trailing: isLikedPlaylist
+                    ? IconButton(
+                        tooltip: '取消网易云收藏',
+                        icon: _pendingLikeChanges.contains(song.id)
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.favorite,
+                                color: Colors.redAccent),
+                        onPressed: _pendingLikeChanges.contains(song.id)
+                            ? null
+                            : () => _setSongLiked(song, false),
+                      )
+                    : null,
+              ),
             ),
         ],
       ),

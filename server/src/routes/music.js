@@ -115,6 +115,57 @@ router.get('/user/playlist/:uid', auth, async (req, res) => {
   }
 });
 
+// Add or remove a song from the account's official Netease "我喜欢的音乐"
+// playlist. The action is deliberately performed by the server, which owns
+// the authenticated Netease session cookie.
+router.post('/like', auth, async (req, res) => {
+  try {
+    const songId = String(req.body?.songId || '').trim();
+    const liked = req.body?.like;
+    if (!/^\d+$/.test(songId) || typeof liked !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: '请提供有效的歌曲 ID 和收藏状态。',
+      });
+    }
+
+    const result = await netease.setSongLiked(songId, liked);
+    if (result?.code !== 200) {
+      return res.status(400).json({
+        success: false,
+        code: result?.code,
+        error: result?.message || result?.msg || '网易云未能完成收藏操作。',
+      });
+    }
+    return res.json({ success: true, data: result });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: '网易云收藏操作失败，请稍后重试。',
+    });
+  }
+});
+
+// Used by search results to render the official collection state correctly.
+router.get('/user/likelist/:uid', auth, async (req, res) => {
+  try {
+    const result = await netease.getLikedSongIds(req.params.uid);
+    if (result?.code !== 200) {
+      return res.status(400).json({
+        success: false,
+        code: result?.code,
+        error: result?.message || result?.msg || '网易云收藏列表加载失败。',
+      });
+    }
+    return res.json({ success: true, data: result });
+  } catch (e) {
+    return res.status(500).json({
+      success: false,
+      error: '网易云收藏列表加载失败，请稍后重试。',
+    });
+  }
+});
+
 // 获取歌单详情
 router.get('/playlist/:id', auth, async (req, res) => {
   try {

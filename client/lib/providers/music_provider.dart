@@ -74,6 +74,34 @@ class MusicNotifier extends StateNotifier<List<Song>> {
     return [];
   }
 
+  Future<void> setSongLiked(String songId, {required bool liked}) async {
+    final res = await _api.post(
+      '/api/music/like',
+      data: {'songId': songId, 'like': liked},
+    );
+    if (res.statusCode == 200 &&
+        res.data is Map &&
+        res.data['success'] == true) {
+      return;
+    }
+
+    final data = res.data;
+    final message = data is Map ? data['error']?.toString() : null;
+    throw Exception(message ?? '网易云收藏操作失败，请稍后重试。');
+  }
+
+  Future<Set<String>> getLikedSongIds(int uid) async {
+    final res = await _api.get('/api/music/user/likelist/$uid');
+    if (res.statusCode == 200 &&
+        res.data is Map &&
+        res.data['success'] == true) {
+      final data = res.data['data'];
+      final ids = _nestedList(data, 'ids');
+      return ids.map((id) => id.toString()).toSet();
+    }
+    return <String>{};
+  }
+
   Future<void> deleteLocalSong(String songId) async {
     await _api.delete('/api/downloads/$songId');
   }

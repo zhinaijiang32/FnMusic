@@ -107,7 +107,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final authState = ref.read(authProvider);
       if (authState.isLoggedIn) {
         _pollTimer?.cancel();
-        return; // FnMusicApp 会自动切换到主页
+        return; // TuneCacheApp 会自动切换到主页
       }
 
       _pollCount++;
@@ -124,7 +124,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           // 再次确认 AuthState 已更新
           if (mounted) {
             setState(() => _info = '登录成功！正在跳转...');
-            // FnMusicApp 监听 authProvider 后会自动切换到主页
+            // TuneCacheApp 监听 authProvider 后会自动切换到主页
           }
           return;
         }
@@ -271,7 +271,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               const Icon(Icons.music_note, size: 80, color: Colors.deepPurple),
               const SizedBox(height: 16),
-              Text('飞牛音乐',
+              Text('音栈 TuneCache',
                   style: Theme.of(c)
                       .textTheme
                       .headlineMedium

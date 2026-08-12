@@ -85,6 +85,26 @@ class NeteaseService {
     return this._req('/user/playlist', { uid, cookie: this._savedCookie() });
   }
 
+  // Mirrors the official client's "我喜欢" / cancel-like action.  The
+  // NeteaseCloudMusicApi service uses the saved Netease session cookie here;
+  // no client-side account cookie is exposed or stored by this request.
+  async setSongLiked(id, liked) {
+    return this._req('/like', {
+      id: String(id),
+      like: liked ? 'true' : 'false',
+      cookie: this._savedCookie(),
+      timestamp: Date.now(),
+    }, 'POST');
+  }
+
+  async getLikedSongIds(uid) {
+    return this._req('/likelist', {
+      uid: String(uid),
+      cookie: this._savedCookie(),
+      timestamp: Date.now(),
+    });
+  }
+
   async getPlaylistDetail(id) {
     return this._req('/playlist/detail', { id, cookie: this._savedCookie() });
   }

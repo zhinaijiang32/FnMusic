@@ -79,7 +79,7 @@ class _ServerSettingsPageState extends State<ServerSettingsPage> {
           const Icon(Icons.dns_rounded, size: 52, color: Colors.deepPurple),
           const SizedBox(height: 16),
           Text(
-            '输入 FnMusic 服务端地址',
+            '输入音栈 TuneCache 服务端地址',
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.titleLarge,
           ),
